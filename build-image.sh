@@ -22,8 +22,11 @@ php_version=$(docker run wordpress:latest php -v | grep -oP 'PHP \K\d+\.\d+')
 echo "Building Wordpress image with PHP $php_version..."
 
 docker build $(dirname $0)/image \
-  --compress \
-  -t $DOCKER_REPO:latest
+   --compress \
+   --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+   --build-arg GIT_COMMIT_HASH="$(git rev-parse --short HEAD)" \
+   --build-arg GIT_REPO_URL="$(git config --get remote.origin.url)" \
+   -t $DOCKER_REPO:latest
   "$@"
 
 #

@@ -7,6 +7,16 @@
 #
 FROM wordpress:latest
 
+ARG BUILD_DATE
+ARG GIT_REPO_URL
+ARG GIT_COMMIT_HASH
+
+LABEL \
+  org.label-schema.schema-version="1.0" \
+  org.label-schema.build-date=$BUILD_DATE \
+  org.label-schema.vcs-ref=$GIT_COMMIT_HASH \
+  org.label-schema.vcs-url=$GIT_REPO_URL
+
 RUN set -x && \
   apt-get update && \
   ############################################################
