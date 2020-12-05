@@ -1,6 +1,6 @@
 # vegardit/wordpress-ext <a href="https://github.com/vegardit/docker-wordpress-ext/" title="GitHub Repo"><img height="30" src="https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/github.svg?sanitize=true"></a>
 
-[![Build Status](https://travis-ci.com/vegardit/docker-wordpress-ext.svg?branch=master "Tavis CI")](https://travis-ci.com/vegardit/docker-wordpress-ext)
+[![Build Status](https://github.com/vegardit/docker-wordpress-ext/workflows/Build/badge.svg "GitHub Actions")](https://github.com/vegardit/docker-wordpress-ext/actions?query=workflow%3ABuild)
 [![License](https://img.shields.io/github/license/vegardit/docker-wordpress-ext.svg?label=license)](#license)
 [![Docker Pulls](https://img.shields.io/docker/pulls/vegardit/wordpress-ext.svg)](https://hub.docker.com/r/vegardit/wordpress-ext)
 [![Docker Stars](https://img.shields.io/docker/stars/vegardit/wordpress-ext.svg)](https://hub.docker.com/r/vegardit/wordpress-ext)
@@ -13,9 +13,9 @@
 
 ## <a name="what-is-it"></a>What is it?
 
-This docker image extends the official Wordpress docker image with support for LDAP auth, OPcache and reverse HTTPS proxies.
+This docker image extends the official [Wordpress](https://wordpress.org) docker image [`wordpress:latest`](https://hub.docker.com/_/wordpress/?tab=tags&name=latest) with additional support for [LDAP auth](https://www.php.net/manual/en/book.ldap.php), [OPcache](https://www.php.net/manual/en/book.opcache.php) and reverse HTTPS proxies.
 
-It is automatically build **daily** based on the image `wordpress:latest` found at https://hub.docker.com/_/wordpress/.
+It is automatically built **daily** to include the latest OS security fixes.
 
 1. Adds [PHP LDAP](https://www.php.net/manual/en/book.ldap.php) client support.
 1. Enables the [php-production.ini](https://github.com/php/php-src/blob/master/php.ini-production) configuration.

@@ -1,13 +1,32 @@
 #!/bin/bash
+#
 # Copyright 2020 by Vegard IT GmbH, Germany, https://vegardit.com
 # SPDX-License-Identifier: SPDX-License-Identifier: GPL-2.0-or-later
 #
-# @author Sebastian Thomschke, Vegard IT GmbH
+# Author: Sebastian Thomschke, Vegard IT GmbH
 #
 # https://github.com/vegardit/docker-wordpress-ext
 #
 
-# This file will be sourced by /usr/local/bin/docker-entrypoint-original.sh
+# This file will be sourced by /usr/local/bin/docker-entrypoint.sh
+
+cat <<'EOF'
+ _    __                          __   __________
+| |  / /__  ____ _____ __________/ /  /  _/_  __/
+| | / / _ \/ __ `/ __ `/ ___/ __  /   / /  / /
+| |/ /  __/ /_/ / /_/ / /  / /_/ /  _/ /  / /
+|___/\___/\__, /\__,_/_/   \__,_/  /___/ /_/
+         /____/
+
+EOF
+
+cat /opt/build_info
+echo
+
+if [ -f "$INIT_SH_FILE" ]; then
+   source "$INIT_SH_FILE"
+fi
+
 
 value="define('FORCE_SSL_LOGIN', $WP_FORCE_SSL_LOGIN);"
 echo "Setting $value..."
