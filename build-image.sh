@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Copyright 2020 by Vegard IT GmbH, Germany, https://vegardit.com
-# SPDX-License-Identifier: SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright 2020-2021 by Vegard IT GmbH, Germany, https://vegardit.com
+# SPDX-License-Identifier: GPL-2.0-or-later
 #
 # Author: Sebastian Thomschke, Vegard IT GmbH
 #
@@ -17,7 +17,26 @@ if [ -z "${BASH_VERSINFO:-}" ]; then /usr/bin/env bash "$0" "$@"; exit; fi
 
 set -o pipefail
 
-trap 'echo >&2 "$(date +%H:%M:%S) Error - exited with status $? at line $LINENO:"; pr -tn $0 | tail -n+$((LINENO - 3)) | head -n7' ERR
+
+#################################################
+# install debug traps
+#################################################
+trap 'rc=$?; echo >&2 "$(date +%H:%M:%S) Error - exited with status $rc in [$BASH_SOURCE] at line $LINENO:"; cat -n $BASH_SOURCE | tail -n+$((LINENO - 3)) | head -n7' ERR
+
+if [[ "${DEBUG:-}" == "1" ]]; then
+  if [[ $- =~ x ]]; then
+    # "set -x" was specified already, we only improve the PS4 in this case
+    PS4='+\033[90m[$?] $BASH_SOURCE:$LINENO ${FUNCNAME[0]}()\033[0m '
+  else
+    # "set -x" was not specified, we use a DEBUG trap for better debug output
+    set -T
+
+    __print_debug_statement() {
+      printf "\e[90m#[$?] $BASH_SOURCE:$1 ${FUNCNAME[1]}() %*s\e[35m$BASH_COMMAND\e[m\n" "$(( 2 * ($BASH_SUBSHELL + ${#FUNCNAME[*]} - 2) ))" >&2
+    }
+    trap '__print_debug_statement $LINENO' DEBUG
+  fi
+fi
 
 
 #################################################
@@ -65,6 +84,7 @@ if [[ $OSTYPE == "cygwin" || $OSTYPE == "msys" ]]; then
 fi
 
 docker build "$project_root/image" \
+  --progress=plain \
    --pull \
    `# using the current date as value for BASE_LAYER_CACHE_KEY, i.e. the base layer cache (that holds system packages with security updates) will be invalidate once per day` \
    --build-arg BASE_LAYER_CACHE_KEY=$base_layer_cache_key \
@@ -81,18 +101,30 @@ docker build "$project_root/image" \
 # perform security audit using https://github.com/aquasecurity/trivy
 #################################################
 if [[ $OSTYPE != cygwin ]] && [[ $OSTYPE != msys ]]; then
-   trivy_cache_dir="${TRIVY_CACHE_DIR:-$HOME/.trivy/cache}"
-   trivy_cache_dir="${trivy_cache_dir/#\~/$HOME}"
-   mkdir -p "$trivy_cache_dir"
-   docker run --rm \
-      -v /var/run/docker.sock:/var/run/docker.sock:ro \
-      -v "$trivy_cache_dir:/root/.cache/" \
-      aquasec/trivy --no-progress --exit-code 0 --severity HIGH,CRITICAL $image_name
-   docker run --rm \
-      -v /var/run/docker.sock:/var/run/docker.sock:ro \
-      -v "$trivy_cache_dir:/root/.cache/" \
-      aquasec/trivy --no-progress --ignore-unfixed --exit-code 1 --severity HIGH,CRITICAL $image_name
-   sudo chown -R $USER:$(id -gn) "$trivy_cache_dir" || true
+  trivy_cache_dir="${TRIVY_CACHE_DIR:-$HOME/.trivy/cache}"
+  trivy_cache_dir="${trivy_cache_dir/#\~/$HOME}"
+  mkdir -p "$trivy_cache_dir"
+
+  docker run --rm \
+    -v /var/run/docker.sock:/var/run/docker.sock:ro \
+    -v "$trivy_cache_dir:/root/.cache/" \
+    aquasec/trivy --no-progress \
+      --severity HIGH,CRITICAL \
+      --exit-code 0 \
+      $image_name
+
+  docker run --rm \
+    -v /var/run/docker.sock:/var/run/docker.sock:ro \
+    -v "$project_root/.trivyignore":/.trivyignore \
+    -v "$trivy_cache_dir:/root/.cache/" \
+    aquasec/trivy --no-progress \
+      --severity HIGH,CRITICAL \
+      --ignore-unfixed \
+      --ignorefile /.trivyignore \
+      --exit-code 1 \
+      $image_name
+
+  sudo chown -R $USER:$(id -gn) "$trivy_cache_dir" || true
 fi
 
 
