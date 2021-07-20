@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# Copyright 2020 by Vegard IT GmbH, Germany, https://vegardit.com
-# SPDX-License-Identifier: SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright 2020-2021 by Vegard IT GmbH, Germany, https://vegardit.com
+# SPDX-License-Identifier: GPL-2.0-or-later
 #
 # Author: Sebastian Thomschke, Vegard IT GmbH
 #
@@ -10,6 +10,9 @@
 
 # This file will be sourced by /usr/local/bin/docker-entrypoint.sh
 
+#################################################
+# print header
+#################################################
 cat <<'EOF'
  _    __                          __   __________
 | |  / /__  ____ _____ __________/ /  /  _/_  __/
@@ -23,7 +26,10 @@ EOF
 cat /opt/build_info
 echo
 
-if [ -f "$INIT_SH_FILE" ]; then
+#################################################
+# load custom init script if specified
+#################################################
+if [[ -f $INIT_SH_FILE ]]; then
    source "$INIT_SH_FILE"
 fi
 

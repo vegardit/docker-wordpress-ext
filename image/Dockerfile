@@ -1,5 +1,6 @@
-# Copyright 2020 by Vegard IT GmbH, Germany, https://vegardit.com
-# SPDX-License-Identifier: SPDX-License-Identifier: GPL-2.0-or-later
+#syntax=docker/dockerfile:1.2
+# Copyright 2020-2021 by Vegard IT GmbH, Germany, https://vegardit.com
+# SPDX-License-Identifier: GPL-2.0-or-later
 #
 # Author: Sebastian Thomschke, Vegard IT GmbH
 #
@@ -25,29 +26,11 @@ ARG LC_ALL=C
 
 ARG BASE_LAYER_CACHE_KEY
 
-RUN \
+RUN --mount=type=bind,source=.shared,target=/mnt/shared \
   set -eu && \
-  echo "#################################################" && \
-  echo "Installing OS updates..." && \
-  echo "#################################################" && \
-  apt-get update -y && \
-  # https://github.com/phusion/baseimage-docker/issues/319
-  apt-get install --no-install-recommends -y apt-utils 2> >( grep -v 'debconf: delaying package configuration, since apt-utils is not installed' >&2 ) && \
-  apt-get upgrade -y && \
-  #
-  if [ "${DEBUG_BUILD}" = "1" ]; then \
-     echo "#################################################" && \
-     echo "Installing debugging tools..." && \
-     echo "#################################################" && \
-     apt-get install --no-install-recommends -y libcomerr2 mc && \
-     apt-get install --no-install-recommends -y htop less procps vim && \
-     echo -e 'set ignorecase\n\
-set showmatch\n\
-set novisualbell\n\
-set noerrorbells\n\
-syntax enable\n\
-set mouse-=a' > ~/.vimrc; \
-  fi && \
+  /mnt/shared/cmd/debian-install-os-updates.sh && \
+  /mnt/shared/cmd/debian-install-support-tools.sh && \
+ #
   echo "#################################################" && \
   echo "Configuring LDAP client support..." && \
   echo "#################################################" && \
@@ -71,20 +54,7 @@ set mouse-=a' > ~/.vimrc; \
   echo "#################################################" && \
   sed -i '/^exec "[$]@"/i source /usr/local/bin/docker-entrypoint-addons.sh' /usr/local/bin/docker-entrypoint.sh && \
   #
-  echo "#################################################" && \
-  echo "apt-get clean up..." && \
-  echo "#################################################" && \
-  apt-get remove apt-utils -y && \
-  apt-get clean autoclean && \
-  apt-get autoremove --purge -y && \
-  #
-  echo "#################################################" && \
-  echo "Removing logs, caches and temp files..." && \
-  echo "#################################################" && \
-  rm -rf /var/cache/{apt,debconf} \
-     /var/lib/apt/lists/* \
-     /var/log/{apt,alternatives.log,bootstrap.log,dpkg.log} \
-     /tmp/* /var/tmp/*
+  /mnt/shared/cmd/debian-cleanup.sh
 
 ARG BUILD_DATE
 ARG GIT_BRANCH
@@ -98,7 +68,9 @@ LABEL \
   org.label-schema.vcs-ref=$GIT_COMMIT_HASH \
   org.label-schema.vcs-url=$GIT_REPO_URL
 
-ENV  \
+
+# Default configuration: can be overridden at the docker command line
+ENV \
   INIT_SH_FILE='' \
   # See https://www.php.net/manual/en/opcache.configuration.php
   PHP_OPCACHE_ENABLE="1" \
@@ -113,12 +85,13 @@ ENV  \
   WP_FORCE_SSL_ADMIN="false" \
   WP_FORCE_SSL_LOGIN="false"
 
-COPY opcache.ini /usr/local/etc/php/conf.d/opcache.ini
-COPY docker-entrypoint-addons.sh /usr/local/bin/
+COPY image/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY image/docker-entrypoint-addons.sh /usr/local/bin/
 
 RUN \
-  echo "GIT_REPO:   $GIT_REPO_URL" > /opt/build_info && \
-  echo "GIT_BRANCH: $GIT_BRANCH" >> /opt/build_info && \
-  echo "GIT_COMMIT: $GIT_COMMIT_HASH @ $GIT_COMMIT_DATE" >> /opt/build_info  && \
-  echo "IMAGE_BUILD: $BUILD_DATE" >> /opt/build_info && \
-  cat /opt/build_info
+  set -eu && \
+  echo -e "\
+GIT_REPO:    $GIT_REPO_URL\n\
+GIT_BRANCH:  $GIT_BRANCH\n\
+GIT_COMMIT:  $GIT_COMMIT_HASH @ $GIT_COMMIT_DATE\n\
+IMAGE_BUILD: $BUILD_DATE\n" >/opt/build_info
