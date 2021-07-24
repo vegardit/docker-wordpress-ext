@@ -54,6 +54,5 @@ bash "$shared_lib/cmd/audit-image.sh" $image_name
 # push image with tags to remote docker image registry
 #################################################
 if [[ "${DOCKER_PUSH:-0}" == "1" ]]; then
-   docker image tag $image_name $docker_registry/$image_name
    docker push $docker_registry/$image_name
 fi
