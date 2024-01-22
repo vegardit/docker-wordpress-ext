@@ -1,12 +1,8 @@
 #!/bin/bash
-#
-# Copyright 2020-2021 by Vegard IT GmbH, Germany, https://vegardit.com
+# SPDX-FileCopyrightText: © Vegard IT GmbH (https://vegardit.com)
+# SPDX-FileContributor: Sebastian Thomschke
 # SPDX-License-Identifier: GPL-2.0-or-later
-#
-# Author: Sebastian Thomschke, Vegard IT GmbH
-#
-# https://github.com/vegardit/docker-wordpress-ext
-#
+# SPDX-ArtifactOfProjectHomePage: https://github.com/vegardit/docker-wordpress-ext
 
 # This file will be sourced by /usr/local/bin/docker-entrypoint.sh
 

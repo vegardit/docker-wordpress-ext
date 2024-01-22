@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
-#
-# Copyright 2020-2021 by Vegard IT GmbH, Germany, https://vegardit.com
+# SPDX-FileCopyrightText: © Vegard IT GmbH (https://vegardit.com)
+# SPDX-FileContributor: Sebastian Thomschke
 # SPDX-License-Identifier: GPL-2.0-or-later
-#
-# Author: Sebastian Thomschke, Vegard IT GmbH
-#
-# https://github.com/vegardit/docker-wordpress-ext
-#
+# SPDX-ArtifactOfProjectHomePage: https://github.com/vegardit/docker-wordpress-ext
 
 shared_lib="$(dirname $0)/.shared"
 [ -e "$shared_lib" ] || curl -sSf https://raw.githubusercontent.com/vegardit/docker-shared/v1/download.sh?_=$(date +%s) | bash -s v1 "$shared_lib" || exit 1
