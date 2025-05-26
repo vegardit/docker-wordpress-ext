@@ -1,4 +1,5 @@
 #!/bin/bash
+#
 # SPDX-FileCopyrightText: © Vegard IT GmbH (https://vegardit.com)
 # SPDX-FileContributor: Sebastian Thomschke
 # SPDX-License-Identifier: GPL-2.0-or-later
@@ -25,11 +26,16 @@ echo
 #################################################
 # load custom init script if specified
 #################################################
-if [[ -f $INIT_SH_FILE ]]; then
-   source "$INIT_SH_FILE"
+if [[ -f "$INIT_SH_FILE" ]]; then
+  log INFO "Loading [$INIT_SH_FILE]..."
+  # shellcheck disable=SC1090  # ShellCheck can't follow non-constant source
+  source "$INIT_SH_FILE"
 fi
 
 
+#################################################
+# update wp-config.php based on ENV VARS
+#################################################
 value="define('FORCE_SSL_LOGIN', $WP_FORCE_SSL_LOGIN);"
 echo "Setting $value..."
 if grep -q "define('FORCE_SSL_LOGIN', .*);" wp-config.php; then
@@ -63,6 +69,6 @@ if [[ $WP_REVERSE_HTTPS_PROXY == "true" || $WP_REVERSE_HTTPS_PROXY == "1" ]]; th
 else
   echo "Disabling reverse proxy support..."
   sed -i '/HTTP_X_FORWARDED_PROTO/d' wp-config.php
-  sed -i '/HTTP_X_FORWARDED_HOST/d' wp-config.php
-  sed -i '/HTTP_X_FORWARDED_FOR/d' wp-config.php
+  sed -i '/HTTP_X_FORWARDED_HOST/d'  wp-config.php
+  sed -i '/HTTP_X_FORWARDED_FOR/d'   wp-config.php
 fi
