@@ -69,7 +69,7 @@ echo "
 " | sudo tee /etc/buildkitd.toml
 
 builder_name="bx-$(date +%s)-$RANDOM"
-run_step "Configure buildx builder" -- docker buildx create \
+run_step "buildx builder: configure" -- docker buildx create \
   --name "$builder_name" \
   --bootstrap \
   --config /etc/buildkitd.toml \
@@ -159,11 +159,11 @@ function regctl() {
 
 if [[ ${DOCKER_PUSH:-} == "true" ]]; then
   for tag in "${tags[@]}"; do
-    regctl image copy --referrers "$LOCAL_REGISTRY/$image_name" "docker.io/$image_repo:$tag"
+    regctl image copy --digest-tags --include-external --referrers "$LOCAL_REGISTRY/$image_name" "docker.io/$image_repo:$tag"
   done
 fi
 if [[ ${DOCKER_PUSH_GHCR:-} == "true" ]]; then
   for tag in "${tags[@]}"; do
-    regctl image copy --referrers "$LOCAL_REGISTRY/$image_name" "ghcr.io/$image_repo:$tag"
+    regctl image copy --digest-tags --include-external --referrers "$LOCAL_REGISTRY/$image_name" "ghcr.io/$image_repo:$tag"
   done
 fi
